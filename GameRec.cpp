@@ -15,7 +15,7 @@
 #include <map>
 #include <algorithm>
 #include <utility>
-#include <cmath>
+#include <set>
 int* GameRec::turn = new int(1);
 
 GameRec::GameRec(Board *board,char *fromPos,char *toPos){
@@ -112,7 +112,8 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
         }
         dsplyBd(board,8,8,rec,toRow,toCol);
         pair<int,int> points = clcScor(p1,p2,brd);
-        cout << endl<<points.first << " " << points.second;
+        cout << endl;
+        shwScor(p1,p2,points);
         delete rec;
         (*turn)++;
         canMove = false;
@@ -143,6 +144,7 @@ pair<int,int> GameRec::clcScor(map<string,int> &plyr1,map<string,int> &plyr2,Abs
                              {"Bishop",3},{"Knight",3}}; 
     plyr1 ={{"Pawn",0},{"Rook",0},{"Queen",0}, // maps amount of specific pieces
                              {"Bishop",0},{"Knight",0}}; // taken to help calc players score
+    plyr2.clear();
     copy(plyr1.begin(),plyr1.end(),inserter(plyr2,plyr2.begin())); // copy p1map to p2map
     for(int i = 0 ; i < 8; i++){
         for(int j = 0; j < 8; j++){
@@ -158,8 +160,52 @@ pair<int,int> GameRec::clcScor(map<string,int> &plyr1,map<string,int> &plyr2,Abs
     });
     return scores = {p1Pt,p2Pt};
 }
-void shwScor(map<string,int> p1Map, map<string,int> p2Map,pair<int,int> plyrPts){
-    
+void GameRec::tknPce1(map<string,int> p2Map){ // pieces player 1 took
+    set<string> allPces = {"Pawn","Knight","Queen","Bishop","Rook"};
+    map<string,int> pceAmnt = {{"Pawn",8},{"Queen",1},{"Rook",2},
+                               {"Knight",2},{"Bishop",2}};
+    map<string,string> p2Symbl = {{"Pawn","P"},{"Rook","R"},{"Knight","k"},
+                                {"Bishop","B"},{"Queen","Q"}};
+    for(string p : allPces){ // print out the pieces player 1 took
+        int captred = pceAmnt[p] - p2Map[p];
+        for(int i = 0; i < captred; i++){
+            cout <<p2Symbl[p];
+        }
+        cout << ' ';
+    }
+}
+void GameRec::tknPce2(map<string,int> p1Map){ // pieces player 2 took
+    set<string> allPces = {"Pawn","Knight","Queen","Bishop","Rook"};
+    map<string,string> p1Symbl = {{"Pawn","!"},{"Rook","/V\\"},{"Knight","?"},
+                                {"Bishop","(-)"},{"Queen","\\|/"}};
+    map<string,int> pceAmnt = {{"Pawn",8},{"Queen",1},{"Rook",2},
+                               {"Knight",2},{"Bishop",2}};
+    for(string p : allPces){ // print out the pieces player 2 took
+        int captred = pceAmnt[p] - p1Map[p];
+        for(int i = 0; i < captred; i++){
+            cout <<p1Symbl[p];
+        }
+        cout << ' ';
+    }
+}
+void GameRec::shwScor(map<string,int> p1Map, map<string,int> p2Map,pair<int,int> plyrPts){
+    int score = 0;
+    if(plyrPts.first>plyrPts.second){
+        score = plyrPts.first - plyrPts.second;
+        cout << "Player 1: ";tknPce1(p2Map);cout<<"+" << score << endl;
+        cout << "Player 2: ";tknPce2(p1Map);cout << endl;
+    }
+    else if(plyrPts.first<plyrPts.second){
+        score = plyrPts.second - plyrPts.first;
+        cout << "Player 1: ";
+        tknPce1(p2Map);cout<<endl;
+        cout << "Player 2: ";
+        tknPce2(p1Map);cout<<" +" << score << endl;
+    }
+    else{
+        cout << "Player 1: ";tknPce1(p2Map);cout << endl;
+        cout << "Player 2: ";tknPce2(p1Map);cout << endl;
+    }
 }
 
 void GameRec::dsplyBd(Board *board,int r,int c,GameRec *p,int toRow,int toCol){

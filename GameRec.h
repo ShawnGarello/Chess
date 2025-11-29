@@ -48,5 +48,7 @@ class GameRec{
         void shwPlyr(T);
         pair<int,int> clcScor(map<string,int> &,map<string,int> &,AbsPiece***); // calculate score with maps
         void shwScor(map<string,int>,map<string,int>,pair<int,int>);
+        void tknPce1(map<string,int>);
+        void tknPce2(map<string,int>);
 };
 #endif
