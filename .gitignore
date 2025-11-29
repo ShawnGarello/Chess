@@ -21,7 +21,7 @@
 Thumbs.db
 Desktop.ini
 
-# CMake / Makefile leftovers (if you ever add them)
+# CMake / Makefile leftovers 
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
@@ -32,5 +32,9 @@ build/
 *.stackdump
 *.dmp
 
-# IDE-specific (if someone uses CLion / JetBrains)
+# IDE-specific
 .idea/
+
+*.bin
+*.txt
+git rm --cached *.bin *.txt   # stop tracking them

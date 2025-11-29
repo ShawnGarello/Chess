@@ -50,7 +50,6 @@ int main(int argc, char** argv) {
     //Display the Inputs/Outputs
     game.dsplyBd(b,8,8);
     game.gamePly(b,binFile,txtFile);
-    
     //Clean up the code, close files, deallocate memory, etc....
     txtFile.close();
     binFile.close();

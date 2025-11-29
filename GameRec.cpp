@@ -11,8 +11,11 @@
 #include <iomanip> 
 #include <iostream>
 #include <fstream> // files
-#include <vector> //STL
-
+#include <list>
+#include <map>
+#include <algorithm>
+#include <utility>
+#include <cmath>
 int* GameRec::turn = new int(1);
 
 GameRec::GameRec(Board *board,char *fromPos,char *toPos){
@@ -29,10 +32,11 @@ GameRec::GameRec(const GameRec &gmeRc){
     strcpy(to,gmeRc.to);
 }
 GameRec::~GameRec(){}
-
 void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
-    vector<GameRec *> record;
+    list<GameRec *> record; // record of moves
     AbsPiece*** brd = board->getBrd();
+    map<string,int> p1;
+    map<string,int>p2;
     string player;
     bool isChck = false;
     bool canMove = false;
@@ -107,6 +111,8 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
             wrtTxt(txtOut,rec,piece);
         }
         dsplyBd(board,8,8,rec,toRow,toCol);
+        pair<int,int> points = clcScor(p1,p2,brd);
+        cout << endl<<points.first << " " << points.second;
         delete rec;
         (*turn)++;
         canMove = false;
@@ -118,13 +124,43 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
     //delete turn;
     cout<<endl<<setw(30)<<"END OF GAME"<<endl;
     cout<<setw(28)<<"HISTORY"<<endl;
-    for(int i = 0; i < record.size();i++){
-        cout<<"TURN "<<i+1<<setw(10)<<record[i]->getFrom()<<" to "<<
-              record[i]->getTo()<<endl;
-        delete record[i];
+    int turnNm = 1;
+    // print game record with linked list using bidirectional iterator
+    for(list<GameRec*>::iterator it = record.begin(); it!=record.end();it++){
+        cout <<"TURN"<<turnNm<<setw(10)<<(*it)->getFrom()<<" to "<<
+            (*it)->getTo()<<endl;
+        delete *it;
+        turnNm++;
     }
 
     delete turn;
+}
+pair<int,int> GameRec::clcScor(map<string,int> &plyr1,map<string,int> &plyr2,AbsPiece*** brd){
+    int p1Pt = 0;
+    int p2Pt = 0;
+    pair<int,int> scores;
+    map<string, int> pceVal ={{"Pawn",1},{"Rook",5},{"Queen",9}, // map of score value of each piece
+                             {"Bishop",3},{"Knight",3}}; 
+    map<string, int> plyr1 ={{"Pawn",0},{"Rook",0},{"Queen",0}, // maps amount of specific pieces
+                             {"Bishop",0},{"Knight",0}}; // taken to help calc players score
+    map<string, int> plyr2;
+    copy(plyr1.begin(),plyr1.end(),inserter(plyr2,plyr2.begin())); // copy p1map to p2map
+    for(int i = 0 ; i < 8; i++){
+        for(int j = 0; j < 8; j++){
+            string owner = brd[i][j]->getOwnr();
+            string pceNme = brd[i][j]->getName();
+            if(owner == "Player 1") plyr1[pceNme]++;
+            if(owner == "Player 2") plyr2[pceNme]++;
+        }
+    }
+    for_each(pceVal.begin(),pceVal.end(),[&](const pair<string,int>& pv){
+        p1Pt += pv.second * plyr1[pv.first];
+        p2Pt += pv.second * plyr2[pv.first];
+    });
+    return scores = {p1Pt,p2Pt};
+}
+void shwScor(map<string,int> p1Map, map<string,int> p2Map,pair<int,int> plyrPts){
+    
 }
 
 void GameRec::dsplyBd(Board *board,int r,int c,GameRec *p,int toRow,int toCol){

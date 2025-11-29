@@ -8,6 +8,8 @@
 #ifndef GAMEREC_H
 #define GAMEREC_H
 #include "Board.h"
+#include <utility>
+#include <map>
 
 enum letter {A,B,C,D,E,F,G,H}; //enum for letters in board, represent index of a column
 
@@ -44,5 +46,7 @@ class GameRec{
         GameRec& operator=(const GameRec &rec2);
         template <class T>
         void shwPlyr(T);
+        pair<int,int> clcScor(map<string,int> &,map<string,int> &,AbsPiece***); // calculate score with maps
+        void shwScor(map<string,int>,map<string,int>,pair<int,int>);
 };
 #endif
