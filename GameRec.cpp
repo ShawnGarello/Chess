@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <utility>
 #include <set>
+#include <queue>
 int* GameRec::turn = new int(1);
 
 GameRec::GameRec(Board *board,char *fromPos,char *toPos){
@@ -33,7 +34,8 @@ GameRec::GameRec(const GameRec &gmeRc){
 }
 GameRec::~GameRec(){}
 void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
-    list<GameRec *> record; // record of moves
+    list<GameRec *> record1; // record of player 1 moves;
+    queue<GameRec *> record2; // record of player 2 moves;
     AbsPiece*** brd = board->getBrd();
     map<string,int> p1;
     map<string,int>p2;
@@ -105,7 +107,12 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
         GameRec *rec = filObj(board,from,to,turn);
         GameRec *copy2 = rec;//copies and points to same thing using overlaoded =
         GameRec *copy1 = new GameRec(*rec);// copies using copy constructor
-        record.push_back(copy1);
+        if(*turn%2==0){
+            record2.push(copy1);
+        }
+        else{
+            record1.push_back(copy1);
+        }
         if(*copy1==*rec){
             wrtBin(binOut,rec,piece);
             wrtTxt(txtOut,rec,piece);
@@ -125,15 +132,35 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
     //delete turn;
     cout<<endl<<setw(30)<<"END OF GAME"<<endl;
     cout<<setw(28)<<"HISTORY"<<endl;
-    int turnNm = 1;
-    // print game record with linked list using bidirectional iterator
-    for(list<GameRec*>::iterator it = record.begin(); it!=record.end();it++){
-        cout <<"TURN"<<turnNm<<setw(10)<<(*it)->getFrom()<<" to "<<
-            (*it)->getTo()<<endl;
-        delete *it;
-        turnNm++;
+    int moveNo = 1;
+    list<GameRec*>::iterator it = record1.begin(); // iterator for Player 1 (list)
+    cout << setw(6) << "Move#" << setw(18) << "Player 1" << "  " << "Player 2" << "\n";
+    while(it != record1.end() || !record2.empty()){
+        cout << setw(6) << moveNo++;
+        // Player 1 column list
+        if(it != record1.end()){
+            GameRec* g1 = *it;
+            cout << setw(18) << string(g1->getFrom()) + "->" + string(g1->getTo());
+            it++;
+        }
+        else{
+            cout << setw(18) << " ";
+        }
+        cout << "  ";
+        // Player 2 column queue
+        if(!record2.empty()){
+            GameRec* g2 = record2.front();
+            record2.pop();  // pop while printing
+            cout << string(g2->getFrom()) + "->" + string(g2->getTo());
+            delete g2; // delete
+        }
+        cout << "\n";
     }
-
+    //cleanup remaining GameRec* in the list
+    for(GameRec* p : record1){
+        delete p;
+    }
+    record1.clear();
     delete turn;
 }
 pair<int,int> GameRec::clcScor(map<string,int> &plyr1,map<string,int> &plyr2,AbsPiece*** brd){
