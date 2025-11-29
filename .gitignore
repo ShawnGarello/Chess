@@ -37,4 +37,3 @@ build/
 
 *.bin
 *.txt
-git rm --cached *.bin *.txt   # stop tracking them

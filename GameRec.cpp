@@ -141,9 +141,8 @@ pair<int,int> GameRec::clcScor(map<string,int> &plyr1,map<string,int> &plyr2,Abs
     pair<int,int> scores;
     map<string, int> pceVal ={{"Pawn",1},{"Rook",5},{"Queen",9}, // map of score value of each piece
                              {"Bishop",3},{"Knight",3}}; 
-    map<string, int> plyr1 ={{"Pawn",0},{"Rook",0},{"Queen",0}, // maps amount of specific pieces
+    plyr1 ={{"Pawn",0},{"Rook",0},{"Queen",0}, // maps amount of specific pieces
                              {"Bishop",0},{"Knight",0}}; // taken to help calc players score
-    map<string, int> plyr2;
     copy(plyr1.begin(),plyr1.end(),inserter(plyr2,plyr2.begin())); // copy p1map to p2map
     for(int i = 0 ; i < 8; i++){
         for(int j = 0; j < 8; j++){
