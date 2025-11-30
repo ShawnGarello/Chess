@@ -51,6 +51,6 @@ class GameRec{
         void shwScor(map<string,int>,map<string,int>,pair<int,int>);
         void tknPce1(map<string,int>);
         void tknPce2(map<string,int>);
-        void rewind(stack<GameRec *>, Board *,map<int,AbsPiece *>,map<int,AbsPiece *>);
+        void rewind(stack<GameRec *> &, Board *,map<int,AbsPiece *> &,map<int,AbsPiece *> &);
 };
 #endif

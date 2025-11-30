@@ -144,7 +144,7 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
     cout<<setw(28)<<"HISTORY"<<endl;
     int moveNo = 1;
     list<GameRec*>::iterator it = record1.begin(); // iterator for Player 1 (list)
-    cout << setw(6) << "Move#" << setw(18) << "Player 1" << "  " << "Player 2" << "\n";
+    cout << setw(6) << "Turn #" << setw(18) << "Player 1" << "  " << "Player 2" << "\n";
     while(it != record1.end() || !record2.empty()){
         cout << setw(6) << moveNo++;
         // Player 1 column list
@@ -174,7 +174,7 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
     rewind(prevMve,board,tknP1,tknP2);
     delete turn;
 }
-void GameRec::rewind(stack<GameRec*> prev, Board* board,map<int,AbsPiece *> p1Tkn,map<int, AbsPiece *> p2Tkn){
+void GameRec::rewind(stack<GameRec*> &prev, Board* board,map<int,AbsPiece *> &p1Tkn,map<int, AbsPiece *> &p2Tkn){
     AbsPiece*** brd = board->getBrd();
     /* // Debug
     cout << "Captured Pieces So Far" << endl;
@@ -220,7 +220,21 @@ void GameRec::rewind(stack<GameRec*> prev, Board* board,map<int,AbsPiece *> p1Tk
             cout << endl << endl;
             this_thread::sleep_for(chrono::seconds(2));
             count++;
+            delete mve;
         }
+    }
+    // delete 
+    for(map<int, AbsPiece*>::iterator it = p1Tkn.begin(); it != p1Tkn.end(); it++){
+        delete it->second;
+    }
+    p1Tkn.clear();
+    for(map<int, AbsPiece*>::iterator it = p2Tkn.begin(); it != p2Tkn.end(); it++){
+        delete it->second;
+    }
+    p2Tkn.clear();
+    while(!prev.empty()){
+        delete prev.top();
+        prev.pop();
     }
 }
 pair<int,int> GameRec::clcScor(map<string,int> &plyr1,map<string,int> &plyr2,AbsPiece*** brd){
