@@ -161,6 +161,25 @@ void Board::mvePce(AbsPiece*** board,int fromRow,int fromCol,int toRow,int toCol
         board[fromRow][fromCol] = new Empty("EMPTY","EMPTY","   ",false);
     }
 }
+void Board::mvePce(AbsPiece*** board,int fromRow,int fromCol,int toRow,int toCol,map<int,AbsPiece*> &p1Tkn,map<int,AbsPiece *> &p2Tkn,int *turn){
+    if(board[toRow][toCol]->getOwnr()=="EMPTY"){
+        AbsPiece *temp;
+        temp = board[toRow][toCol]->copy();
+        delete board[toRow][toCol];
+        board[toRow][toCol]=board[fromRow][fromCol]->copy();
+        delete board[fromRow][fromCol];
+        board[fromRow][fromCol]=temp;
+    }
+    else{
+        AbsPiece *temp = board[toRow][toCol]->copy();
+        if(temp->getOwnr()=="Player 1") p1Tkn[*turn] = temp;
+        else p2Tkn[*turn] = temp;
+        delete board[toRow][toCol];
+        board[toRow][toCol]=board[fromRow][fromCol]->copy();
+        delete board[fromRow][fromCol];
+        board[fromRow][fromCol] = new Empty("EMPTY","EMPTY","   ",false);
+    }
+}
 bool Board::isAtck(AbsPiece*** board,int row,int col){// checks if piece is being attacked
     // Check all 8 directions for attacking pieces
     int dir[8][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1},  

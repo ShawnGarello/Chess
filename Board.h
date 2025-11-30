@@ -9,6 +9,7 @@
 #ifndef BOARD_H
 #define BOARD_H
 #include "AbsPiece.h"
+#include <map>
 
 class Board{
     private:   
@@ -20,7 +21,8 @@ class Board{
     Board();
     ~Board();
     void mvePce(AbsPiece***,int,int,int,int); // moves the piece of where its from to where user wants it
-    bool isAtck(AbsPiece***,int,int);// checks if piece is being attacked
+    void mvePce(AbsPiece***,int,int,int,int,map<int,AbsPiece*> &,map<int,AbsPiece *> &,int *); // overloaded function for rewind purposes to keep track of taken pieces
+    bool isAtck(AbsPiece***,int,int);// checks if piece is being attacked 
     bool simMove(AbsPiece***,int,int,int,int,int,int);//simulate move to see if move makes king in check
     AbsPiece*** getBrd(){return board;}
     void setBrd(int,int);

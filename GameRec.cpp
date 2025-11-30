@@ -17,6 +17,9 @@
 #include <utility>
 #include <set>
 #include <queue>
+#include <stack>
+#include <thread>
+#include <chrono>
 int* GameRec::turn = new int(1);
 
 GameRec::GameRec(Board *board,char *fromPos,char *toPos){
@@ -36,6 +39,10 @@ GameRec::~GameRec(){}
 void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
     list<GameRec *> record1; // record of player 1 moves;
     queue<GameRec *> record2; // record of player 2 moves;
+    stack<GameRec *> prevMve;
+    map<int,AbsPiece*> tknP1;
+    map<int,AbsPiece *> tknP2;
+    AbsPiece*** brdCopy;
     AbsPiece*** brd = board->getBrd();
     map<string,int> p1;
     map<string,int>p2;
@@ -70,14 +77,16 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
             cnvrtIn(from,frmRow,frmCol);
             cnvrtIn(to,toRow,toCol);
             if(brd[frmRow][frmCol]->getOwnr()==player){
-                if(player=="Player 2")canMove=brd[frmRow][frmCol]->cnMvPce(board,frmRow,frmCol,toRow,toCol,isChck,p2KngRw,p2KngCl);
+                if(player=="Player 2"){
+                    canMove=brd[frmRow][frmCol]->cnMvPce(board,frmRow,frmCol,toRow,toCol,isChck,p2KngRw,p2KngCl);
+                }
                 else canMove=brd[frmRow][frmCol]->cnMvPce(board,frmRow,frmCol,toRow,toCol,isChck,p1KngRw,p1KngCl);
             }
         }while(!canMove);
         if(!kpPly)break;
         if(brd[frmRow][frmCol]->getHsMv()==false)brd[frmRow][frmCol]->setHsMv(true);
         AbsPiece* piece = brd[frmRow][frmCol];
-        board->mvePce(brd,frmRow,frmCol,toRow,toCol);
+        board->mvePce(brd,frmRow,frmCol,toRow,toCol,tknP1,tknP2,turn);
         if(brd[toRow][toCol]->getName() == "King"){
             if(player == "Player 1"){
                 p1KngRw = toRow;
@@ -117,6 +126,7 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
             wrtBin(binOut,rec,piece);
             wrtTxt(txtOut,rec,piece);
         }
+        prevMve.push(new GameRec(*copy1));
         dsplyBd(board,8,8,rec,toRow,toCol);
         pair<int,int> points = clcScor(p1,p2,brd);
         cout << endl;
@@ -161,7 +171,57 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
         delete p;
     }
     record1.clear();
+    rewind(prevMve,board,tknP1,tknP2);
     delete turn;
+}
+void GameRec::rewind(stack<GameRec*> prev, Board* board,map<int,AbsPiece *> p1Tkn,map<int, AbsPiece *> p2Tkn){
+    AbsPiece*** brd = board->getBrd();
+    /* // Debug
+    cout << "Captured Pieces So Far" << endl;
+    cout << "Player 1:" << endl;
+    for (auto &p : p1Tkn) {
+        cout << "Turn " << p.first << ": "
+            << p.second->getName() << " owned by "
+            << p.second->getOwnr() << endl;
+    }
+    cout << "Player 2:" << endl;
+    for (auto &p : p2Tkn) {
+        cout << "Turn " << p.first << ": "
+            << p.second->getName() << " owned by "
+            << p.second->getOwnr() << endl;
+    }*/
+    char choice;
+    int count = 0;
+    int totalMv = prev.size();
+    cout <<"Review the game? (y/n): ";
+    cin >> choice;
+    if(choice != 'y' && choice != 'Y')return;
+    else{
+        dsplyBd(board,8,8);
+        cout << endl << endl;
+        this_thread::sleep_for(chrono::seconds(2)); // delay 2 seconds each time displaying previous moves
+        while(!prev.empty()){
+            GameRec* mve = prev.top();
+            int row1,row2,col1,col2;
+            prev.pop();
+            char* from = mve->getTo();
+            char* to = mve->getFrom();
+            cnvrtIn(from,row1,col1); // convert characters into their positions
+            cnvrtIn(to,row2,col2);
+            int rvrsTrn = totalMv - count;
+            if(p1Tkn.count(rvrsTrn)){ // if a piece is taken restore the taken piece in rewind
+                brd[row2][col2]->setPce(p1Tkn[rvrsTrn]->getPce());
+            }
+            if(p2Tkn.count(rvrsTrn)){
+                brd[row2][col2]->setPce(p2Tkn[rvrsTrn]->getPce());
+            }
+            board->mvePce(brd,row1,col1,row2,col2); // reverse moves from move history
+            dsplyBd(board,8,8);
+            cout << endl << endl;
+            this_thread::sleep_for(chrono::seconds(2));
+            count++;
+        }
+    }
 }
 pair<int,int> GameRec::clcScor(map<string,int> &plyr1,map<string,int> &plyr2,AbsPiece*** brd){
     int p1Pt = 0;
@@ -217,19 +277,19 @@ void GameRec::tknPce2(map<string,int> p1Map){ // pieces player 2 took
 }
 void GameRec::shwScor(map<string,int> p1Map, map<string,int> p2Map,pair<int,int> plyrPts){
     int score = 0;
-    if(plyrPts.first>plyrPts.second){
+    if(max(plyrPts.first,plyrPts.second) == plyrPts.first && plyrPts.first != plyrPts.second){
         score = plyrPts.first - plyrPts.second;
         cout << "Player 1: ";tknPce1(p2Map);cout<<"+" << score << endl;
         cout << "Player 2: ";tknPce2(p1Map);cout << endl;
     }
-    else if(plyrPts.first<plyrPts.second){
+    else if(min(plyrPts.first,plyrPts.second)==plyrPts.first && plyrPts.first != plyrPts.second){
         score = plyrPts.second - plyrPts.first;
         cout << "Player 1: ";
         tknPce1(p2Map);cout<<endl;
         cout << "Player 2: ";
         tknPce2(p1Map);cout<<" +" << score << endl;
     }
-    else{
+    else if(plyrPts.first == plyrPts.second){
         cout << "Player 1: ";tknPce1(p2Map);cout << endl;
         cout << "Player 2: ";tknPce2(p1Map);cout << endl;
     }
