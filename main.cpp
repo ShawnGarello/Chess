@@ -1,12 +1,10 @@
 /* 
  * File:   main.cpp
  * Author: Shawn Garello
- * Created on May 28,2025
- * Purpose  Project 2 OOP - Board Game: Chess
- *          Continuation from Project 1 purpose of this version
- *          Is just continuation from V4.Final version. Converted
- *          everything in old code to classes. Adding 5 more things
- *          Needed in check off list.
+ * Created on 11/30/2025
+ * Purpose  Project 1 Board Game: Chess
+ *          Continuation of my chess project. Final version
+ *          which contains everything needed from the checkoff list.
  *           
  */
 //System Libraries
