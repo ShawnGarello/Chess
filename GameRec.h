@@ -11,6 +11,9 @@
 #include <utility>
 #include <map>
 #include <stack>
+#include <queue>
+#include <iterator>
+#include <list>
 
 enum letter {A,B,C,D,E,F,G,H}; //enum for letters in board, represent index of a column
 
@@ -52,5 +55,6 @@ class GameRec{
         void tknPce1(map<string,int>);
         void tknPce2(map<string,int>);
         void rewind(stack<GameRec *> &, Board *,map<int,AbsPiece *> &,map<int,AbsPiece *> &);
+        void prntHst(list<GameRec*>::iterator,list<GameRec*>::iterator,queue<GameRec*> &,int); // rec function for print
 };
 #endif

@@ -144,6 +144,9 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
     cout<<setw(28)<<"HISTORY"<<endl;
     int moveNo = 1;
     list<GameRec*>::iterator it = record1.begin(); // iterator for Player 1 (list)
+    list<GameRec*>::iterator end = record1.end(); // end of list
+    prntHst(it,end,record2,moveNo);
+    /*
     cout << setw(6) << "Turn #" << setw(18) << "Player 1" << "  " << "Player 2" << "\n";
     while(it != record1.end() || !record2.empty()){
         cout << setw(6) << moveNo++;
@@ -166,6 +169,7 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
         }
         cout << "\n";
     }
+        */
     //cleanup remaining GameRec* in the list
     for(GameRec* p : record1){
         delete p;
@@ -423,4 +427,30 @@ GameRec& GameRec::operator=(const GameRec &rec2){
 template <class T>
 void GameRec::shwPlyr(T data){
     cout<< "Previous Turn: "<< data << endl;
+}
+void GameRec::prntHst(list<GameRec*>::iterator it,list<GameRec*>::iterator end,queue<GameRec*> &p2,int moveNo){
+    if(it == end && p2.empty()) return; // base case
+
+    cout << setw(6) << moveNo;
+
+    // Player 1 move (linked list)
+    if(it != end){
+        GameRec* g1 = *it;
+        cout << setw(18)
+             << string(g1->getFrom()) + "->" + string(g1->getTo());
+        ++it;
+    }
+    else{
+        cout << setw(18) << " ";
+    }
+    cout << "  ";
+    // Player 2 move (queue)
+    if(!p2.empty()){
+        GameRec* g2 = p2.front();
+        p2.pop();
+        cout << string(g2->getFrom()) + "->" + string(g2->getTo());
+        delete g2;
+    }
+    cout << '\n';
+    prntHst(it, end, p2, moveNo + 1); // recursive function call
 }
