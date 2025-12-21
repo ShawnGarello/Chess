@@ -61,5 +61,8 @@ class GameRec{
         void qckSort(pair<int,AbsPiece*>*, int, int);
         int prtitn(pair<int,AbsPiece*>*, int, int);
         int getPcVl(string);
+        void bldGrph(Board*, AbsPiece***, string, map<string, list<string>>&);
+        void shwGrph(map<string, list<string>>&, string);
+        string sqrStr(int, int);
 };
 #endif

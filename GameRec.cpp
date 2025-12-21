@@ -150,6 +150,14 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
         shwPlyr<string>(player);
     }while(kpPly);
     //delete turn;
+    cout << endl;
+    map<string, list<string>> p1Graph;
+    map<string, list<string>> p2Graph;
+
+    bldGrph(board, brd, "Player 1", p1Graph);
+    shwGrph(p1Graph, "Player 1");
+    bldGrph(board, brd, "Player 2", p2Graph);
+    shwGrph(p2Graph, "Player 2");
     cout<<endl<<setw(30)<<"END OF GAME"<<endl;
     cout<<setw(28)<<"HISTORY"<<endl;
     int moveNo = 1;
@@ -178,6 +186,10 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
     } else {
         cout << "Move a2-a4 not found." << endl;
     }
+    for(map<int, GameRec*>::iterator it = mveLkUp.begin(); it != mveLkUp.end(); it++){
+        delete it->second;
+    }
+    mveLkUp.clear();
     delete turn;
 }
 void GameRec::rewind(stack<GameRec*> &prev, Board* board,map<int,AbsPiece *> &p1Tkn,map<int, AbsPiece *> &p2Tkn){
@@ -465,7 +477,7 @@ unsigned int GameRec::DJBHash(const std::string& str){
 }
 void GameRec::shwCptr(map<int, AbsPiece*>& captures, string player){
     int size = captures.size();
-    if(size == 0) {
+    if(size == 0){
         cout << player << " captured no pieces." << endl;
         return;
     }
@@ -518,4 +530,47 @@ int GameRec::getPcVl(string name){
     if(name == "Rook") return 5;
     if(name == "Queen") return 9;
     return 0;  // Empty space
+}
+void GameRec::bldGrph(Board* board, AbsPiece*** brd, string player, map<string, list<string>>& graph){
+    graph.clear();
+    for(int i = 0; i < 8; i++){
+        for(int j = 0; j < 8; j++){
+            if(brd[i][j]->getOwnr() == player){
+                string from = sqrStr(i, j);
+                list<string> validMoves;
+                // Check all possible destinations
+                for(int r = 0; r < 8; r++){
+                    for(int c = 0; c < 8; c++){
+                        if(i != r || j != c){  // Not same square
+                            bool isCheck = false;
+                            int kingRow = (player == "Player 1") ? 7 : 0;
+                            int kingCol = 4;
+                            // Use cnMvPce to check valid moves
+                            if(brd[i][j]->cnMvPce(board, i, j, r, c, isCheck, kingRow, kingCol)){
+                                validMoves.push_back(sqrStr(r, c));
+                            }
+                        }
+                    }
+                }
+                if(!validMoves.empty()){
+                    graph[from] = validMoves;
+                }
+            }
+        }
+    }
+}
+string GameRec::sqrStr(int row, int col){
+    char colChar = 'a' + col;
+    char rowChar = '1' + (7 - row);   
+    return string(1, colChar) + string(1, rowChar);
+}
+void GameRec::shwGrph(map<string, list<string>>& graph, string player){
+    cout << "\n" << player << " Move Graph (Valid Moves):" << endl;
+    for(pair<string, list<string>> entry : graph){
+        cout << entry.first << " -> ";
+        for(string dest : entry.second){
+            cout << dest << " ";
+        }
+        cout << endl;
+    }
 }
