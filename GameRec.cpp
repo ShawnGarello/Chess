@@ -156,30 +156,11 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
     list<GameRec*>::iterator it = record1.begin(); // iterator for Player 1 (list)
     list<GameRec*>::iterator end = record1.end(); // end of list
     prntHst(it,end,record2,moveNo);
-    /*
-    cout << setw(6) << "Turn #" << setw(18) << "Player 1" << "  " << "Player 2" << "\n";
-    while(it != record1.end() || !record2.empty()){
-        cout << setw(6) << moveNo++;
-        // Player 1 column list
-        if(it != record1.end()){
-            GameRec* g1 = *it;
-            cout << setw(18) << string(g1->getFrom()) + "->" + string(g1->getTo());
-            it++;
-        }
-        else{
-            cout << setw(18) << " ";
-        }
-        cout << "  ";
-        // Player 2 column queue
-        if(!record2.empty()){
-            GameRec* g2 = record2.front();
-            record2.pop();  // pop while printing
-            cout << string(g2->getFrom()) + "->" + string(g2->getTo());
-            delete g2; // delete
-        }
-        cout << "\n";
-    }
-        */
+    cout << endl;
+    shwCptr(tknP1, "Player 2");  // Player 2's captures (took from P1)
+    cout << endl;
+    shwCptr(tknP2, "Player 1");  // Player 1's captures (took from P2)
+    cout << endl;
     //cleanup remaining GameRec* in the list
     for(GameRec* p : record1){
         delete p;
@@ -481,4 +462,60 @@ unsigned int GameRec::DJBHash(const std::string& str){
       hash = ((hash << 5) + hash) + str[i];
    }
    return hash;
+}
+void GameRec::shwCptr(map<int, AbsPiece*>& captures, string player){
+    int size = captures.size();
+    if(size == 0) {
+        cout << player << " captured no pieces." << endl;
+        return;
+    }
+    
+    // Convert map to array
+    pair<int, AbsPiece*>* arr = new pair<int, AbsPiece*>[size];
+    int idx = 0;
+    
+    for(pair<int, AbsPiece*> p : captures){
+        arr[idx++] = p;
+    }
+    
+    // Recursive Quick Sort
+    qckSort(arr, 0, size - 1);
+    
+    // Display sorted captures
+    cout << player << " captures (sorted by piece value):" << endl;
+    for(int i = 0; i < size; i++){
+        cout << "  Turn " << arr[i].first << ": " 
+            << arr[i].second->getName() << " [" 
+            << arr[i].second->getPce() << "] "
+            << "(value: " << getPcVl(arr[i].second->getName()) << ")" << endl;
+    }
+    
+    delete[] arr;
+}
+void GameRec::qckSort(pair<int, AbsPiece*>* arr, int low, int high){
+    if(low < high){
+        int pi = prtitn(arr, low, high);
+        qckSort(arr, low, pi - 1);      
+        qckSort(arr, pi + 1, high);
+    }
+}
+int GameRec::prtitn(pair<int, AbsPiece*>* arr, int low, int high){
+    int pivot = getPcVl(arr[high].second->getName()); // Sort by piece value
+    int i = low - 1;
+    
+    for(int j = low; j < high; j++){
+        if(getPcVl(arr[j].second->getName()) < pivot){
+            i++;
+            swap(arr[i], arr[j]);
+        }
+    }
+    swap(arr[i + 1], arr[high]);
+    return i + 1;
+}
+int GameRec::getPcVl(string name){
+    if(name == "Pawn") return 1;
+    if(name == "Knight" || name == "Bishop") return 3;
+    if(name == "Rook") return 5;
+    if(name == "Queen") return 9;
+    return 0;  // Empty space
 }
