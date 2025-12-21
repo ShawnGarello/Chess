@@ -56,5 +56,6 @@ class GameRec{
         void tknPce2(map<string,int>);
         void rewind(stack<GameRec *> &, Board *,map<int,AbsPiece *> &,map<int,AbsPiece *> &);
         void prntHst(list<GameRec*>::iterator,list<GameRec*>::iterator,queue<GameRec*> &,int); // rec function for print
+        unsigned int DJBHash(const string& str);
 };
 #endif

@@ -20,6 +20,8 @@
 #include <stack>
 #include <thread>
 #include <chrono>
+#include "AVL.h"
+#include <unordered_map>
 int* GameRec::turn = new int(1);
 
 GameRec::GameRec(Board *board,char *fromPos,char *toPos){
@@ -42,6 +44,9 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
     stack<GameRec *> prevMve;
     map<int,AbsPiece*> tknP1;
     map<int,AbsPiece *> tknP2;
+    unordered_map<unsigned int, int> hshTble;
+    AVL mveIndx; // stores turn numbers with trees.
+    map<int, GameRec*> mveLkUp; // maps turn to move
     AbsPiece*** brdCopy;
     AbsPiece*** brd = board->getBrd();
     map<string,int> p1;
@@ -114,6 +119,11 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
         cout<<"King player 2 pos row:"<<p2KngRw<<"  col:"<<p2KngCl<<endl;
         */
         GameRec *rec = filObj(board,from,to,turn);
+        mveIndx.root = mveIndx.insert(mveIndx.root, *turn);
+        mveLkUp[*turn] = new GameRec(*rec);
+        string mveStr = string(rec->getFrom()) + "->" + string(rec->getTo());
+        unsigned int moveHsh = DJBHash(mveStr);
+        hshTble[moveHsh] = *turn;
         GameRec *copy2 = rec;//copies and points to same thing using overlaoded =
         GameRec *copy1 = new GameRec(*rec);// copies using copy constructor
         if(*turn%2==0){
@@ -176,6 +186,17 @@ void GameRec::gamePly(Board *board,fstream &binOut,fstream &txtOut){
     }
     record1.clear();
     rewind(prevMve,board,tknP1,tknP2);
+    cout << "\nAVL Tree (Inorder Traversal by Turn): ";
+    mveIndx.inorder(mveIndx.root);
+    cout << endl;
+    string lookupMove = "a2->a4";
+    unsigned int lookupHash = DJBHash(lookupMove);
+
+    if(hshTble.find(lookupHash) != hshTble.end()){
+        cout << "Move a2->a4 found on turn: " << hshTble[lookupHash] << endl;
+    } else {
+        cout << "Move a2-a4 not found." << endl;
+    }
     delete turn;
 }
 void GameRec::rewind(stack<GameRec*> &prev, Board* board,map<int,AbsPiece *> &p1Tkn,map<int, AbsPiece *> &p2Tkn){
@@ -453,4 +474,11 @@ void GameRec::prntHst(list<GameRec*>::iterator it,list<GameRec*>::iterator end,q
     }
     cout << '\n';
     prntHst(it, end, p2, moveNo + 1); // recursive function call
+}
+unsigned int GameRec::DJBHash(const std::string& str){
+   unsigned int hash = 5381;
+   for(std::size_t i = 0; i < str.length(); i++){
+      hash = ((hash << 5) + hash) + str[i];
+   }
+   return hash;
 }
